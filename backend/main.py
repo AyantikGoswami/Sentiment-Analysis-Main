@@ -70,7 +70,11 @@ def analyze_text(text: str) -> SentimentResult:
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "engine": "sklearn"}
+    return {
+        "status": "ok",
+        "engine": "sklearn",
+        "version": "1.0"
+    }
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest):
