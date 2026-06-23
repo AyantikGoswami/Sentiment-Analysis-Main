@@ -2,6 +2,14 @@
 
 Type text, get a positive/negative/neutral verdict. 
 
+# Features
+- Real-time sentiment analysis
+- Positive, negative, and neutral classification
+- Confidence-based prediction handling
+- REST API built with FastAPI
+- Modern web interface with dynamic themes
+- Batch analysis support
+
 ## Get the Code
 
 ```bash
