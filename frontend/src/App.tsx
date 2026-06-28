@@ -39,6 +39,8 @@ function App() {
   const [input, setInput] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<Result[]>(() =>
     JSON.parse(localStorage.getItem('sh') || '[]')
   )
@@ -52,18 +54,27 @@ function App() {
   const analyze = async () => {
     const text = input.trim()
     if (!text) return
-    const res = await fetch('/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
-    const data = await res.json()
-    const r = data.results[0]
-    setResult(r)
-    const next = [r, ...history].slice(0, 20)
-    setHistory(next)
-    localStorage.setItem('sh', JSON.stringify(next))
-    fetchMetrics()
+    setError(null)
+    setLoading(true)
+    try {
+      const res = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error(`Server returned ${res.status}`)
+      const data = await res.json()
+      const r = data.results[0]
+      setResult(r)
+      const next = [r, ...history].slice(0, 20)
+      setHistory(next)
+      localStorage.setItem('sh', JSON.stringify(next))
+      fetchMetrics()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Analysis failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const bgClass = result ? bgByLabel[result.label] : 'bg-blue-950'
@@ -88,12 +99,18 @@ function App() {
         />
         <button
           onClick={analyze}
-          disabled={!input.trim()}
+          disabled={!input.trim() || loading}
           className="mt-3 px-8 py-3 bg-gradient-to-r from-violet-700 to-indigo-700 hover:from-violet-600 hover:to-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl font-semibold transition-all duration-200 active:scale-95"
         >
-          Analyze
+          {loading ? 'Analyzing…' : 'Analyze'}
         </button>
       </div>
+
+      {error && (
+        <div className="backdrop-blur-xl bg-red-950/60 rounded-2xl p-4 border border-red-500/30 shadow-2xl mb-6 animate-slide-in">
+          <p className="text-red-300 text-sm">{error}</p>
+        </div>
+      )}
 
       {result && (
         <div key={result.text + result.compound} className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 border border-white/10 shadow-2xl mb-6 animate-slide-in">
