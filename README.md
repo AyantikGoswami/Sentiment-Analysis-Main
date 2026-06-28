@@ -28,7 +28,7 @@ python backend/main.py
 
 ## How It Works
 
-Trains a **TF-IDF + Logistic Regression** model on 3,000 labelled sentences from Amazon, IMDb, and Yelp reviews (UCI dataset). For a detailed mathematical and structural breakdown of the pipeline, read the [Technical Report (PDF)](./docs/sentiment-analysis-report.pdf).
+Trains a **TF-IDF + Logistic Regression** model on the IMDB reviews dataset (`backend/model/IMDB.csv`). For a detailed mathematical and structural breakdown of the pipeline, read the [Technical Report (PDF)](./docs/sentiment-analysis-report.pdf).
 
 - Converts text to numeric vectors using TF-IDF (word importance scores)
 - Logistic Regression learns which words predict positive or negative
