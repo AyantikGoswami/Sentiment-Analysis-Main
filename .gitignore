@@ -4,3 +4,7 @@ frontend/dist/
 __pycache__/
 *.pyc
 .env
+mad_env/
+*.pkl
+IMDB.csv
+*.ipynb
