@@ -13,7 +13,7 @@ total_analyzed = 0
 label_counts = {"pos": 0, "neg": 0, "neu": 0}
 compound_sum = 0.0
 
-NEU_THRESHOLD = 0.6
+NEU_THRESHOLD = 0.65
 
 class AnalyzeRequest(BaseModel):
     text: Optional[str] = None
