@@ -20,9 +20,13 @@ LABEL_MAP = {
 
 def clean_text(text: str) -> str:
     text = html.unescape(text)
+    text = text.lower()
     text = re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"http\S+|www\S+", " ", text)
+    text = re.sub(r"[^a-zA-Z\s]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 def normalize_label(label: str) -> str:
@@ -53,8 +57,18 @@ def load_training_data(csv_path: Path = DATA_PATH) -> tuple[list[str], list[str]
 
 def create_pipeline() -> Pipeline:
     return Pipeline([
-        ("tfidf", TfidfVectorizer(max_features=8000, ngram_range=(1, 2))),
-        ("clf", LogisticRegression(C=1.0, max_iter=1000)),
+        ("tfidf", TfidfVectorizer(
+            max_features=15000,       
+            ngram_range=(1, 2),
+            stop_words="english",
+            min_df=2,                 
+            sublinear_tf=True,         
+        )),
+        ("clf", LogisticRegression(
+            C=1.0,
+            max_iter=1000,
+            class_weight="balanced",  
+        )),
     ])
 
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
@@ -13,7 +13,8 @@ total_analyzed = 0
 label_counts = {"pos": 0, "neg": 0, "neu": 0}
 compound_sum = 0.0
 
-NEU_THRESHOLD = 0.6
+NEU_THRESHOLD = 0.65
+MAX_TEXT_LENGTH = 5000
 
 class AnalyzeRequest(BaseModel):
     text: Optional[str] = None
@@ -41,6 +42,21 @@ def class_index(*labels) -> int:
 
 POS_CLASS_INDEX = class_index("pos", "positive", 1)
 NEG_CLASS_INDEX = class_index("neg", "negative", 0)
+
+
+def validate_text(text: str) -> str:
+    text = text.strip()
+
+    if not text:
+        raise ValueError("Input text cannot be empty.")
+
+    if len(text) > MAX_TEXT_LENGTH:
+        raise ValueError(
+            f"Input text exceeds maximum length of {MAX_TEXT_LENGTH} characters."
+        )
+
+    return text
+
 
 def analyze_text(text: str) -> SentimentResult:
     probs = model.predict_proba([text])[0]
@@ -74,6 +90,18 @@ def analyze(req: AnalyzeRequest):
         texts = req.texts
     elif req.text:
         texts = [req.text]
+
+    if not texts:
+        raise HTTPException(
+            status_code=400,
+            detail="Request must include a non-empty 'text' or 'texts' field.",
+        )
+
+    try:
+        texts = [validate_text(t) for t in texts]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     results = [analyze_text(t) for t in texts]
     with lock:
         global total_analyzed, compound_sum
